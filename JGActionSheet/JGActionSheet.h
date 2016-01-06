@@ -33,15 +33,21 @@ typedef NS_ENUM(NSUInteger, JGActionSheetArrowDirection) {
 };
 
 
+/**
+ Custom button class for JGActionSheet
+ @note subclass this class to provide custom buttons to action sheet
+*/
+@interface JGButton : UIButton
 
-
-
+@end
 
 
 /**
  A section for JGActionSheet.
  @sa JGActionSheet.
  */
+
+
 @interface JGActionSheetSection : UIView
 
 /**
@@ -97,6 +103,13 @@ typedef NS_ENUM(NSUInteger, JGActionSheetArrowDirection) {
  @param contentView The custom content view to display in the section.
  */
 - (instancetype)initWithTitle:(NSString *)title message:(NSString *)message contentView:(UIView *)contentView;
+
+/**
+ Initializes the section with custom buttons.
+ @param buttons Array containing JGButtons
+ @warning Ensure that button array contains objects of class type JGButton or its subclasses.
+ */
+- (instancetype)initWithButtons:(NSArray *)buttons;
 
 /**
  Sets the button style for a specific button.

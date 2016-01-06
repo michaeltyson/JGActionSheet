@@ -9,6 +9,7 @@
 #import "JGTableViewController.h"
 
 #import "JGActionSheet.h"
+#import "PlatformActionSheetButtonView.h"
 
 @interface JGTableViewController () <JGActionSheetDelegate> {
     JGActionSheet *_currentAnchoredActionSheet;
@@ -111,11 +112,12 @@
     if (_currentAnchoredActionSheet) {
         UIView *view = _anchorView;
         
-        CGPoint point = (_anchorLeft ? (CGPoint){-5.0f, CGRectGetMidY(view.bounds)} : (CGPoint){CGRectGetMidX(view.bounds), CGRectGetMaxY(view.bounds)});
-        
-        point = [self.navigationController.view convertPoint:point fromView:view];
-        
-        [_currentAnchoredActionSheet moveToPoint:point arrowDirection:(_anchorLeft ? JGActionSheetArrowDirectionRight : JGActionSheetArrowDirectionTop) animated:NO];
+      //        CGPoint point = (_anchorLeft ? (CGPoint){-5.0f, CGRectGetMidY(view.bounds)} : (CGPoint){CGRectGetMidX(view.bounds), CGRectGetMaxY(view.bounds)});
+      //        
+      //        point = [self.navigationController.view convertPoint:point fromView:view];
+      //        
+      //        [_currentAnchoredActionSheet moveToPoint:point arrowDirection:(_anchorLeft ? JGActionSheetArrowDirectionRight : JGActionSheetArrowDirectionTop) animated:NO];
+      [_currentAnchoredActionSheet moveToRect:[self.navigationController.view convertRect:view.bounds fromView:view] animated:NO];
     }
 }
 
@@ -191,15 +193,43 @@
     }
 }
 
+- (JGButton *)buttonWithTitle:(NSString *)title image:(UIImage *)image {
+  JGButton *b = [JGButton buttonWithType:UIButtonTypeCustom];
+  
+  b.titleLabel.font = [UIFont systemFontOfSize:17.0f];
+  b.backgroundColor = [UIColor clearColor];
+  b.layer.borderColor = [UIColor colorWithRed:200.0/255 green:244.0/255 blue:244.0/255 alpha:1.0f].CGColor;
+  CGRect frame = CGRectZero;
+  
+  PlatformActionSheetButtonView *buttonView = [[PlatformActionSheetButtonView alloc]
+                                               initWithTitle:title image:image frame:frame];
+  buttonView.backgroundColor = [UIColor clearColor];
+  
+  [b addSubview:buttonView];
+  return b;
+}
+
 - (void)showSimple:(UIView *)anchor {
     //This is am example of an action sheet that is reused!
     if (!_simple) {
-        _simple = [JGActionSheet actionSheetWithSections:@[[JGActionSheetSection sectionWithTitle:@"Title" message:@"Message" buttonTitles:@[@"Yes", @"No"] buttonStyle:JGActionSheetButtonStyleDefault], [JGActionSheetSection sectionWithTitle:nil message:nil buttonTitles:@[@"Cancel"] buttonStyle:JGActionSheetButtonStyleCancel]]];
-        
+        JGButton *b1 = [self buttonWithTitle:@"Create a poll" image:[UIImage imageNamed:@"UserMenu"]];
+        JGButton *b2 = [self buttonWithTitle:@"Create a tweet" image:[UIImage imageNamed:@"Tweet"]];
+        JGButton *b3 = [self buttonWithTitle:@"Create a nothing" image:[UIImage imageNamed:@"Home"]];
+        //[[b3.subviews lastObject] seperatorView].hidden = YES;
+      
+        JGActionSheetSection *appSection = [[JGActionSheetSection alloc] initWithButtons:@[b1,b2,b3]];
+        appSection.backgroundColor = [UIColor whiteColor];
+        appSection.clipsToBounds = YES;
+      
+        JGActionSheetSection *cancelSection = [JGActionSheetSection cancelSection];
+        NSMutableArray *sections = [[NSMutableArray alloc] initWithObjects:appSection, nil];
+        if (!iPad) {
+          [sections addObject:cancelSection];
+        }
+        _simple = [JGActionSheet actionSheetWithSections:sections];
         _simple.delegate = self;
-        
-        _simple.insets = UIEdgeInsetsMake(20.0f, 0.0f, 0.0f, 0.0f);
-        
+        // _simple.insets = UIEdgeInsetsMake(20.0f, 40.0f, 40.0f, 40.0f);
+          
         if (iPad) {
             [_simple setOutsidePressBlock:^(JGActionSheet *sheet) {
                 [sheet dismissAnimated:YES];
@@ -215,12 +245,7 @@
         _anchorView = anchor;
         _anchorLeft = YES;
         _currentAnchoredActionSheet = _simple;
-        
-        CGPoint p = (CGPoint){-5.0f, CGRectGetMidY(anchor.bounds)};
-        
-        p = [self.navigationController.view convertPoint:p fromView:anchor];
-        
-        [_simple showFromPoint:p inView:[[UIApplication sharedApplication] keyWindow] arrowDirection:JGActionSheetArrowDirectionRight animated:YES];
+        [_simple showFromRect:[self.navigationController.view convertRect:anchor.bounds fromView:anchor]  inView:self.navigationController.view animated:YES];
     }
     else {
         [_simple showInView:self.navigationController.view animated:YES];
